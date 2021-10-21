@@ -1,0 +1,6 @@
+account_id = ""
+name = "cf-file-share"
+type = "webpack"
+workers_dev = true
+site = { bucket = "./public" }
+compatibility_date = "2021-10-21"

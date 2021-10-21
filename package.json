@@ -1,0 +1,28 @@
+{
+  "name": "cf-file-share",
+  "version": "1.0.0",
+  "description": "Serverless file sharing using Cloudflare infrastructure",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/max-lt/cf-file-share.git"
+  },
+  "keywords": [
+    "serverless",
+    "cloudflare",
+    "workers",
+    "kv"
+  ],
+  "author": "https://github.com/max-lt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/max-lt/cf-file-share/issues"
+  },
+  "homepage": "https://github.com/max-lt/cf-file-share#readme",
+  "devDependencies": {
+    "@cloudflare/wrangler": "^1.19.4"
+  }
+}
