@@ -55,7 +55,7 @@
         text-align: center;
         width: 100%;
         font-family: 'Montserrat', sans-serif;
-        max-width: 540px;
+        max-width: 720px;
       }
 
       #ferris {
@@ -68,8 +68,18 @@
         color: rgb(189, 100, 16);
       }
 
-      #success-zone > input {
+      input#success-input:focus-visible {
+        border-color: #f38020;
+        color: #f6821f;
+      }
+
+      input#success-input::selection {
+        background-color: #fef5ed;
+      }
+
+      input#success-input {
         width: 100%;
+        outline: none;
         border: 1px solid #babcbf;
         border-radius: 5px;
         height: 2.625em;

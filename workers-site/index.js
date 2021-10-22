@@ -38,9 +38,8 @@ async function handleEvent(event) {
   if (event.request.method === 'POST' && pathname === '/upload') {
     const data = await request.arrayBuffer();
     const checksum = await self.crypto.subtle.digest('SHA-1', data);
-    const uint8Array = new Uint8Array(checksum);
 
-    const fileId = encode(uint8Array);
+    const fileId = encode(new Uint8Array(checksum));
     const expirationTtl = 60 * 60 * 24;
 
     await store.put(fileId, data,  { expirationTtl });
@@ -60,8 +59,8 @@ async function handleEvent(event) {
 
     const fileType = await store.get(fileId + ':type');
 
-    // We check if type is set for this file
-    // We let the code fall through the 404 error
+    // We check if type is set for this file, if not
+    // we just let the code fall through the 404 error
     if (fileType) {
       const data = await store.get(fileId, { type: 'arrayBuffer' });
 
