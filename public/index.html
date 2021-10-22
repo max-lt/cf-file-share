@@ -152,7 +152,7 @@
   <script>
     let uploading = false;
 
-    async function upload(body) {
+    function upload(body) {
       if (!body || uploading) {
         return;
       }
@@ -165,7 +165,7 @@
       uploading = true;
       document.getElementById('drop-zone').classList.add('uploading');
 
-      await fetch('/upload', { body, method: 'POST' })
+      fetch('/upload', { body, method: 'POST' })
         .then((response) => response.json())
         .then((data) => data.fileId)
         .then((fileId) => {
