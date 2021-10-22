@@ -93,10 +93,11 @@
         min-height: 12em;
       }
 
-      #clipboard-copy-success {
+      #clipboard-message-container {
         color: #4caf50;
-        margin-top: 1em;
         margin-inline-end: 1em;
+        width: 100%;
+        margin-top: 1em;
         text-align: right;
       }
 
@@ -146,7 +147,10 @@
             <a id="success-link" target="_blank">by clicking here</a> or share it with this link:
           </p>
           <input onClick="onInputClick.bind(this)(event);" id="success-input" readonly="true" />
-          <div id="clipboard-copy-success" class="d-none">Link copied in your clipboard !</div>
+          <div id="clipboard-message-container">
+            <span id="clipboard-copy-success" class="d-none">Link copied in your clipboard!</span>&nbsp;&nbsp;
+          </div>
+          <p>Your file will be available for the next 24 hours</p>
         </div>
       </div>
 
