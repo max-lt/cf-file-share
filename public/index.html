@@ -28,6 +28,12 @@
 
       a {
         color: #f6821f;
+        text-decoration: none;
+      }
+
+      a:hover {
+        background-color: #fef5ed;
+        border-bottom: 1px solid #e3c3a9;
       }
 
       a:visited {
@@ -110,7 +116,7 @@
       }
     </style>
   </head>
-  <body>
+  <body style="margin: 0 8px">
     <div class="centered">
       <h1>Share file</h1>
 
@@ -133,7 +139,13 @@
         </div>
       </div>
 
-      <img id="ferris" alt="a happy crab is wearing a cowboy hat and holding a lasso" src="./img/200-wrangler-ferris.gif" />
+      <div style="font-size: x-small;">
+        <img id="ferris" alt="a happy crab is wearing a cowboy hat and holding a lasso" src="./img/200-wrangler-ferris.gif" />
+        <div style="margin-top: 2em; display: flex; justify-content: space-between;">
+          <a target="_blank" href="https://workers.cloudflare.com">Powered by Cloudflare Workers</a>
+          <a target="_blank" href="https://github.com/max-lt/cf-file-share">View code on Github</a>
+        </div>
+      </div>
     </div>
   </body>
 
