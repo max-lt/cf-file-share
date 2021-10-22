@@ -6,6 +6,6 @@
   "license": "MIT",
   "dependencies": {
     "@cloudflare/kv-asset-handler": "~0.1.2",
-    "uuid": "^8.3.2"
+    "bs58": "^4.0.1"
   }
 }

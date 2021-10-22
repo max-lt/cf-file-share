@@ -1,5 +1,5 @@
 import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
-import { v4 as uuid } from 'uuid';
+import { decode, encode } from 'bs58';
 
 /**
  * The DEBUG flag will do two things that help during development:
@@ -16,8 +16,12 @@ addEventListener('fetch', (event) => {
   event.respondWith(handleEvent(event).catch((err) => new Response(err.stack, { status: 500 })));
 });
 
-function isUUID(str) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(str);
+function isBase58(str) {
+  try {
+    return decode(str) && true;
+  } catch (err) {
+    return false;
+  }
 }
 
 async function handleEvent(event) {
@@ -32,11 +36,11 @@ async function handleEvent(event) {
 
   // Handle upload
   if (event.request.method === 'POST' && pathname === '/upload') {
-    const fileId = uuid();
-
     const data = await request.arrayBuffer();
+    const checksum = await self.crypto.subtle.digest('SHA-1', data);
+    const uint8Array = new Uint8Array(checksum);
 
-    console.log('DATA', data.byteLength);
+    const fileId = encode(uint8Array);
 
     await store.put(fileId, data);
     await store.put(fileId + ':type', request.headers.get('Content-Type'));
@@ -50,26 +54,22 @@ async function handleEvent(event) {
   }
 
   // Handle download
-  if (event.request.method === 'GET' && isUUID(pathname.slice(1))) {
-    const fileId = pathname.slice(1, 32 + 4 + 1);
+  if (event.request.method === 'GET' && isBase58(pathname.slice(1))) {
+    const fileId = pathname.slice(1);
 
     const fileType = await store.get(fileId + ':type');
 
     // We check if type is set for this file
     // We let the code fall through the 404 error
     if (fileType) {
-      console.log('Respond with type', fileType)
       const data = await store.get(fileId, { type: 'arrayBuffer' });
-
-      console.log('DATA', data.byteLength);
-      // console.log('DATA', data);
 
       if (data) {
         return new Response(data, {
           status: 200,
           headers: {
             'X-File-Id': fileId,
-            'Content-Type': fileType
+            'Content-Type': fileType || 'application/octet-stream'
           }
         });
       }
