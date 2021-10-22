@@ -4,3 +4,7 @@ type = "webpack"
 workers_dev = true
 site = { bucket = "./public" }
 compatibility_date = "2021-10-21"
+
+kv_namespaces = [ 
+  { binding = "file_store", id = "" }
+]

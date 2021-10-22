@@ -1,4 +1,5 @@
-import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler';
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
+import { v4 as uuid } from 'uuid';
 
 /**
  * The DEBUG flag will do two things that help during development:
@@ -9,12 +10,74 @@ import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
  */
 const DEBUG = false;
 
+const store = file_store;
+
 addEventListener('fetch', (event) => {
-  event.respondWith(handleEvent(event));
+  event.respondWith(handleEvent(event).catch((err) => new Response(err.stack, { status: 500 })));
 });
+
+function isUUID(str) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(str);
+}
 
 async function handleEvent(event) {
   let options = {};
+
+  /**
+   * @type {Request}
+   */
+  const request = event.request;
+
+  const { pathname } = new URL(request.url);
+
+  // Handle upload
+  if (event.request.method === 'POST' && pathname === '/upload') {
+    const fileId = uuid();
+
+    const data = await request.arrayBuffer();
+
+    console.log('DATA', data.byteLength);
+
+    await store.put(fileId, data);
+    await store.put(fileId + ':type', request.headers.get('Content-Type'));
+
+    return new Response(JSON.stringify({ fileId }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  // Handle download
+  if (event.request.method === 'GET' && isUUID(pathname.slice(1))) {
+    const fileId = pathname.slice(1, 32 + 4 + 1);
+
+    const fileType = await store.get(fileId + ':type');
+
+    // We check if type is set for this file
+    // We let the code fall through the 404 error
+    if (fileType) {
+      console.log('Respond with type', fileType)
+      const data = await store.get(fileId, { type: 'arrayBuffer' });
+
+      console.log('DATA', data.byteLength);
+      // console.log('DATA', data);
+
+      if (data) {
+        return new Response(data, {
+          status: 200,
+          headers: {
+            'X-File-Id': fileId,
+            'Content-Type': fileType
+          }
+        });
+      }
+
+      // Weird, we found the file type but not the file
+      console.warn(`No data found for file ${fileId} but type is set`);
+    }
+  }
 
   /**
    * You can add custom logic to how we fetch your assets
@@ -56,25 +119,4 @@ async function handleEvent(event) {
 
     return new Response(e.message || e.toString(), { status: 500 });
   }
-}
-
-/**
- * Here's one example of how to modify a request to
- * remove a specific prefix, in this case `/docs` from
- * the url. This can be useful if you are deploying to a
- * route on a zone, or if you only want your static content
- * to exist at a specific path.
- */
-function handlePrefix(prefix) {
-  return (request) => {
-    // compute the default (e.g. / -> index.html)
-    let defaultAssetKey = mapRequestToAsset(request);
-    let url = new URL(defaultAssetKey.url);
-
-    // strip the prefix from the path for lookup
-    url.pathname = url.pathname.replace(prefix, '/');
-
-    // inherit all other props from the default request
-    return new Request(url.toString(), defaultAssetKey);
-  };
 }

@@ -1,44 +1,199 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- <meta charset="utf-8" /> -->
+    <title>File share</title>
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" /> -->
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="image" href="./img/spinner.svg" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&family=Pacifico&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" />
     <style>
       h1 {
-        font-family: Pacifico, sans-serif;
+        font-family: 'Pacifico', cursive, sans-serif;
         font-size: 4em;
-        color: #3eb5f1;
+        color: #f38020;
         margin: 0;
       }
 
       h2 {
         font-weight: 300;
-        font-family: sans-serif;
+      }
+
+      p {
+        margin-inline-start: 1em;
+      }
+
+      a {
+        color: #f6821f;
+      }
+
+      a:visited {
+        color: #d86300;
+      }
+
+      html,
+      body,
+      .centered {
+        height: 100%;
       }
 
       .centered {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        color: #2f434d;
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        justify-content: space-evenly;
         text-align: center;
+        width: 100%;
+        font-family: 'Montserrat', sans-serif;
+        max-width: 540px;
       }
 
       #ferris {
+        margin: 0 auto;
         width: 75%;
+      }
+
+      #error-zone {
+        text-align: left;
+        color: rgb(189, 100, 16);
+      }
+
+      #success-zone > input {
+        width: 100%;
+        border: 1px solid #babcbf;
+        border-radius: 5px;
+        height: 2.625em;
+        min-width: 100%;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      #error-zone,
+      #success-zone {
+        min-height: 12em;
+      }
+
+      #clipboard-copy-success {
+        color: #4caf50;
+        margin-top: 1em;
+        margin-inline-end: 1em;
+        text-align: right;
+      }
+
+      .d-none {
+        display: none !important;
+      }
+
+      #drop-zone {
+        height: 15em;
+        width: 100%;
+        display: block;
+        max-width: 760px;
+        outline: 2px dashed #f38020;
+        outline-offset: -10px;
+        background-color: rgba(250, 174, 64, 0.3);
+        background-image: url(./img/download.svg);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 100px;
+        transition: outline-offset 0.15s ease-in-out, background-color 0.15s linear;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      #drop-zone.uploading {
+        background-image: url(./img/spinner.svg);
       }
     </style>
   </head>
   <body>
     <div class="centered">
-      <h1>200 Success</h1>
-      <h2>Hello World! Welcome to your Workers Site.</h2>
-      <img
-        id="ferris"
-        alt="a happy crab is wearing a cowboy hat and holding a lasso. 200 success."
-        src="./img/200-wrangler-ferris.gif"
-      />
+      <h1>Share file</h1>
+
+      <div>
+        <div id="upload-zone">
+          <span>Simply share a file with anyone !</span>
+          <input id="file-input" style="visibility: hidden" type="file" multiple="false" onchange="handleFileChange(event)" />
+          <label id="drop-zone" for="file-input" ondragover="dragOverHandler(event);" ondrop="handleDrop(event);"></label>
+        </div>
+
+        <pre id="error-zone" class="d-none"></pre>
+        <div id="success-zone" class="d-none">
+          <h2>Yeehaw!</h2>
+          <p>
+            You can now access to your document<br />
+            <a id="success-link" target="_blank">by clicking here</a> or share it with this link:
+          </p>
+          <input onClick="onInputClick.bind(this)(event);" id="success-input" readonly="true" />
+          <div id="clipboard-copy-success" class="d-none">Link copied in your clipboard !</div>
+        </div>
+      </div>
+
+      <img id="ferris" alt="a happy crab is wearing a cowboy hat and holding a lasso" src="./img/200-wrangler-ferris.gif" />
     </div>
   </body>
+
+  <script>
+    let uploading = false;
+
+    async function upload(body) {
+      if (!body || uploading) {
+        return;
+      }
+
+      if (!(body instanceof File)) {
+        console.warn('Cannot upload', body);
+        return;
+      }
+
+      uploading = true;
+      document.getElementById('drop-zone').classList.add('uploading');
+
+      await fetch('/upload', { body, method: 'POST' })
+        .then((response) => response.json())
+        .then((data) => data.fileId)
+        .then((fileId) => {
+          const url = window.location.href + fileId;
+          console.log('Download your file at', url);
+          document.getElementById('upload-zone').classList.add('d-none');
+          document.getElementById('success-link').setAttribute('href', url);
+          document.getElementById('success-input').setAttribute('value', url);
+          document.getElementById('success-zone').classList.remove('d-none');
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById('upload-zone').classList.add('d-none');
+          const errorZone = document.getElementById('error-zone');
+          errorZone.innerText = error.stack;
+          errorZone.classList.remove('d-none');
+        })
+        .finally(() => dropZone.classList.add('d-none'));
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      upload(event.dataTransfer.items?.length && event.dataTransfer.items[0].getAsFile());
+      return 0;
+    }
+
+    function handleFileChange(event) {
+      event.preventDefault();
+      upload(event.target.files?.length && event.target.files[0]);
+      return 0;
+    }
+
+    function onInputClick(ev) {
+      this.select();
+      document.execCommand('copy');
+      document.getElementById('clipboard-copy-success').classList.remove('d-none');
+    }
+
+    function dragOverHandler(ev) {
+      ev.preventDefault();
+    }
+  </script>
 </html>
