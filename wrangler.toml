@@ -1,5 +1,5 @@
 account_id = ""
-name = "cf-file-share"
+name = "share"
 type = "webpack"
 workers_dev = true
 site = { bucket = "./public" }
