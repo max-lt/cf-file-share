@@ -181,8 +181,15 @@
       document.getElementById('drop-zone').classList.add('uploading');
 
       fetch('/upload', { body, method: 'POST' })
-        .then((response) => response.json())
-        .then((data) => data.fileId)
+        .then(async (response) => {
+          const data = await response.text();
+
+          if(response.status !== 200) {
+            throw new Error(data);
+          }
+
+          return data;
+        })
         .then((fileId) => {
           const url = window.location.href + fileId;
           console.log('Download your file at', url);
@@ -193,7 +200,7 @@
         .catch((error) => {
           console.error(error);
           const errorZone = document.getElementById('error-zone');
-          errorZone.innerText = error.stack;
+          errorZone.innerText = error.message || error;
           errorZone.classList.remove('d-none');
         })
         .finally(() => document.getElementById('upload-zone').classList.add('d-none'));

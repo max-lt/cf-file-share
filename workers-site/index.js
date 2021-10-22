@@ -45,12 +45,7 @@ async function handleEvent(event) {
     await store.put(fileId, data,  { expirationTtl });
     await store.put(fileId + ':type', request.headers.get('Content-Type'), { expirationTtl });
 
-    return new Response(JSON.stringify({ fileId }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    return new Response(fileId);
   }
 
   // Handle download
