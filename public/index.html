@@ -98,6 +98,7 @@
         height: 15em;
         width: 100%;
         display: block;
+        cursor: pointer;
         max-width: 760px;
         outline: 2px dashed #f38020;
         outline-offset: -10px;
@@ -139,9 +140,9 @@
         </div>
       </div>
 
-      <div style="font-size: x-small;">
+      <div style="font-size: x-small">
         <img id="ferris" alt="a happy crab is wearing a cowboy hat and holding a lasso" src="./img/200-wrangler-ferris.gif" />
-        <div style="margin-top: 2em; display: flex; justify-content: space-between;">
+        <div style="margin-top: 2em; display: flex; justify-content: space-between">
           <a target="_blank" href="https://workers.cloudflare.com">Powered by Cloudflare Workers</a>
           <a target="_blank" href="https://github.com/max-lt/cf-file-share">View code on Github</a>
         </div>
@@ -171,19 +172,17 @@
         .then((fileId) => {
           const url = window.location.href + fileId;
           console.log('Download your file at', url);
-          document.getElementById('upload-zone').classList.add('d-none');
           document.getElementById('success-link').setAttribute('href', url);
           document.getElementById('success-input').setAttribute('value', url);
           document.getElementById('success-zone').classList.remove('d-none');
         })
         .catch((error) => {
           console.error(error);
-          document.getElementById('upload-zone').classList.add('d-none');
           const errorZone = document.getElementById('error-zone');
           errorZone.innerText = error.stack;
           errorZone.classList.remove('d-none');
         })
-        .finally(() => dropZone.classList.add('d-none'));
+        .finally(() => document.getElementById('upload-zone').classList.add('d-none'));
     }
 
     function handleDrop(event) {
