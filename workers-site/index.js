@@ -41,9 +41,10 @@ async function handleEvent(event) {
     const uint8Array = new Uint8Array(checksum);
 
     const fileId = encode(uint8Array);
+    const expirationTtl = 60 * 60 * 24;
 
-    await store.put(fileId, data);
-    await store.put(fileId + ':type', request.headers.get('Content-Type'));
+    await store.put(fileId, data,  { expirationTtl });
+    await store.put(fileId + ':type', request.headers.get('Content-Type'), { expirationTtl });
 
     return new Response(JSON.stringify({ fileId }), {
       status: 200,
