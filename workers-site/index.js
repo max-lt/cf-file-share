@@ -35,7 +35,7 @@ async function handleEvent(event) {
   const { pathname } = new URL(request.url);
 
   // Handle upload
-  if (event.request.method === 'POST' && pathname === '/upload') {
+  if (request.method === 'POST' && pathname === '/upload') {
     const data = await request.arrayBuffer();
     const checksum = await self.crypto.subtle.digest('SHA-1', data);
 
@@ -49,7 +49,7 @@ async function handleEvent(event) {
   }
 
   // Handle download
-  if (event.request.method === 'GET' && isBase58(pathname.slice(1))) {
+  if (request.method === 'GET' && isBase58(pathname.slice(1))) {
     const fileId = pathname.slice(1);
 
     const fileType = await store.get(fileId + ':type');
