@@ -177,6 +177,12 @@
         return;
       }
 
+      if (body.size >= 26214400) {
+        document.getElementById('upload-zone').classList.add('d-none');
+        displayError('Your file size exceeds limit of 25MB');
+        return;
+      }
+
       uploading = true;
       document.getElementById('drop-zone').classList.add('uploading');
 
@@ -184,7 +190,7 @@
         .then(async (response) => {
           const data = await response.text();
 
-          if(response.status !== 200) {
+          if (response.status !== 200) {
             throw new Error(data);
           }
 
@@ -197,13 +203,15 @@
           document.getElementById('success-input').setAttribute('value', url);
           document.getElementById('success-zone').classList.remove('d-none');
         })
-        .catch((error) => {
-          console.error(error);
-          const errorZone = document.getElementById('error-zone');
-          errorZone.innerText = error.message || error;
-          errorZone.classList.remove('d-none');
-        })
+        .catch((error) => {})
         .finally(() => document.getElementById('upload-zone').classList.add('d-none'));
+    }
+
+    function displayError(error) {
+      console.error(error);
+      const errorZone = document.getElementById('error-zone');
+      errorZone.innerText = error.message || error;
+      errorZone.classList.remove('d-none');
     }
 
     function handleDrop(event) {
