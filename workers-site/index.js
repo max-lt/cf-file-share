@@ -44,6 +44,7 @@ async function handleEvent(event) {
 
     await store.put(fileId, data,  { expirationTtl });
     await store.put(fileId + ':type', request.headers.get('Content-Type'), { expirationTtl });
+    await store.put(fileId + ':name', request.headers.get('X-File-Name'), { expirationTtl });
 
     return new Response(fileId);
   }
@@ -53,6 +54,7 @@ async function handleEvent(event) {
     const fileId = pathname.slice(1);
 
     const fileType = await store.get(fileId + ':type');
+    const fileName = await store.get(fileId + ':name');
 
     // We check if type is set for this file, if not
     // we just let the code fall through the 404 error
@@ -64,6 +66,8 @@ async function handleEvent(event) {
           status: 200,
           headers: {
             'X-File-Id': fileId,
+            'X-File-Name': fileName,
+            'Content-Disposition': `inline; filename="${fileName}"`,
             'Content-Type': fileType || 'application/octet-stream'
           }
         });

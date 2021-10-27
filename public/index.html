@@ -186,7 +186,7 @@
       uploading = true;
       document.getElementById('drop-zone').classList.add('uploading');
 
-      fetch('/upload', { body, method: 'POST' })
+      fetch('/upload', { body, method: 'POST', headers: { 'X-File-Name': body.name } })
         .then(async (response) => {
           const data = await response.text();
 
