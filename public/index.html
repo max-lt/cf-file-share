@@ -186,7 +186,7 @@
       uploading = true;
       document.getElementById('drop-zone').classList.add('uploading');
 
-      fetch('/upload', { body, method: 'POST', headers: { 'X-File-Name': body.name } })
+      fetch('/upload', { body, method: 'POST', headers: { 'X-File-Name': encodeURIComponent(body.name) } })
         .then(async (response) => {
           const data = await response.text();
 
@@ -203,7 +203,7 @@
           document.getElementById('success-input').setAttribute('value', url);
           document.getElementById('success-zone').classList.remove('d-none');
         })
-        .catch((error) => {})
+        .catch((error) => displayError(error))
         .finally(() => document.getElementById('upload-zone').classList.add('d-none'));
     }
 
