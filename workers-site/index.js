@@ -43,8 +43,10 @@ async function handleEvent(event) {
     const expirationTtl = 60 * 60 * 24;
 
     await store.put(fileId, data,  { expirationTtl });
-    await store.put(fileId + ':type', request.headers.get('Content-Type'), { expirationTtl });
-    await store.put(fileId + ':name', request.headers.get('X-File-Name'), { expirationTtl });
+
+    const fileType = request.headers.get('Content-Type');
+    const fileName = request.headers.get('X-File-Name');
+    await store.put(fileId + ':meta', encodeURI(`type=${fileType}&name=${fileName}`), { expirationTtl });
 
     return new Response(fileId);
   }
@@ -53,13 +55,14 @@ async function handleEvent(event) {
   if (request.method === 'GET' && isBase58(pathname.slice(1))) {
     const fileId = pathname.slice(1);
 
-    const fileType = await store.get(fileId + ':type');
-    const fileName = await store.get(fileId + ':name');
-
-    // We check if type is set for this file, if not
-    // we just let the code fall through the 404 error
-    if (fileType) {
+    const meta = await store.get(fileId + ':meta');
+    // We check if meta is set for this file, if not
+    // we let the code fall through the 404 error
+    if (meta) {
       const data = await store.get(fileId, { type: 'arrayBuffer' });
+      const params = new URLSearchParams(meta);
+      const fileType = params.get('type');
+      const fileName = params.get('name');
 
       if (data) {
         return new Response(data, {
